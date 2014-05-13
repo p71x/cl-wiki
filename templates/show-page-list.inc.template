@@ -1,0 +1,5 @@
+      <ul class="nav">
+<% @loop page-list %>
+         <li><a href="<% @var link %>"><% @var title %></a></li>
+<% @endloop %>
+      </ul>

@@ -1,0 +1,5 @@
+The files coloring-css.lisp, coloring-types.lisp, colorize-package.lisp,
+colorize.lisp, and encode-for-pre.lisp are copied from the CVS version of
+lisppaste <http://common-lisp.net/project/lisppaste/>.
+
+See colorize-LICENSE for the license.

@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html><% @set escape=html %>
+   <head>
+      <title>CL-WIKI: <% @var title %></title>
+      <style type="text/css">
+ul.nav {
+   display: inline;
+   margin: 0px;
+   padding: 0px;
+}
+
+ul.nav li {
+   display: inline;
+   margin: 0px;
+   padding-right: 2em;
+}
+
+ul {
+   margin: 0.5em 0 0 1.2em;
+   padding: 0px;
+}
+
+pre.code {
+   margin-left: 10px;
+   border: 1px solid black;
+   padding: 0.5em;
+   background-color: #ddd;
+}
+
+/* colorized source code */
+div.code {
+   font-family: monospace;
+   margin-left: 10px;
+   border: 1px solid black;
+   padding: 0.5em;
+   background-color: #ddd;
+}
+
+.symbol { color : #770055; background-color : transparent; border: 0px; margin: 0px;}
+a.symbol:link { color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:active { color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:visited { color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+a.symbol:hover { color : #229955; background-color : transparent; text-decoration: none; border: 0px; margin: 0px; }
+.special { color : #FF5000; background-color : inherit; }
+.keyword { color : #770000; background-color : inherit; }
+.comment { color : #007777; background-color : inherit; }
+.string { color : #777777; background-color : inherit; }
+.atom { color : #314F4F; background-color : inherit; }
+.macro { color : #FF5000; background-color : inherit; }
+.variable { color : #36648B; background-color : inherit; }
+.function { color : #8B4789; background-color : inherit; }
+.attribute { color : #FF5000; background-color : inherit; }
+.character { color : #0055AA; background-color : inherit; }
+.syntaxerror { color : #FF0000; background-color : inherit; }
+span.paren1 { background-color : inherit; -webkit-transition: background-color 0.2s linear; }
+span.paren1:hover { color : inherit; background-color : #BAFFFF; }
+span.paren2 { background-color : inherit; -webkit-transition: background-color 0.2s linear; }
+span.paren2:hover { color : inherit; background-color : #FFCACA; }
+span.paren3 { background-color : inherit; -webkit-transition: background-color 0.2s linear; }
+span.paren3:hover { color : inherit; background-color : #FFFFBA; }
+span.paren4 { background-color : inherit; -webkit-transition: background-color 0.2s linear; }
+span.paren4:hover { color : inherit; background-color : #CACAFF; }
+span.paren5 { background-color : inherit; -webkit-transition: background-color 0.2s linear; }
+span.paren5:hover { color : inherit; background-color : #CAFFCA; }
+span.paren6 { background-color : inherit; -webkit-transition: background-color 0.2s linear; }
+span.paren6:hover { color : inherit; background-color : #FFBAFF; }
+/* /colorized source code */
+      </style>
+   </head>
+
+   <body>
+      <h1><a href="<% @var page -escape url %>" title="<% @var title %>"><% @var title %></a></h1>
+<% @include show-page-list.inc.template %>
+      <hr>
+      <% @var body -escape raw %>
+      <hr>
+<% @include show-page-list.inc.template %>
+<% @unless /edit %>
+      <br><a href="<% @var edit-url %>">Edit page</a> (Version <% @var version %>)&nbsp;<% @if prev-link %><small><a href="<% @var prev-link %>">Previous version</a></small><% @endif %>
+      <br>Last modified: <%= @var /meta/last-modified %>
+<% @endif %>
+   </body>
+</html>
