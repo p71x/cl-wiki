@@ -1,0 +1,25 @@
+0.3.3
+	2014-05-13
+	Modified to work with current quicklisp release of libraries.
+	Added sample „wiki.conf” file.
+		
+0.3.2
+	2008-11-19
+	Regexp/rendering speedup. Thanks to Ralf Stoye.
+
+0.3.1
+	2008-07-07
+	New codes <small>, <big>, <s>, <u>, <del>, <ins>, <br>, <sub>, <sup>, 
+	comments, droping dependency on kmrcl
+
+0.3.0
+	2008-06-20
+	New code <nowiki>, preview of edited page
+
+0.2.4
+	2008-06-16
+	Small fix to please SBCL, start script for SBCL
+
+0.2.3
+	2008-06-15
+	Source snippets colorized with colorize code from lisppaste
