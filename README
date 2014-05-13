@@ -1,3 +1,7 @@
+This is original, outdated and unmaintained from 2008 year version 
+of cl-wiki (version 0.3.2, last version publisched on 
+http://common-lisp.net/project/cl-wiki/). It does'not work 
+with current (year 2014) version of hunhentoot.
 
 =========   ---------------------------
  CL-WIKI    Wiki Engine for Common Lisp
