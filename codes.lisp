@@ -47,7 +47,7 @@ will be escaped and stored in *preserved-html*."
 (defun make-source-snippet (lang string)
   "Make a source snippet (colorized or just plain PRE) out of string."
   (if lang
-      (concatenate 'string "<div class=\"code\">" (colorize::html-colorization lang string) "</div>")
+      (concatenate 'string "<div class=\"code\">" (colorize:html-colorization lang string 'colorize::encode-for-tt) "</div>")
       (concatenate 'string "<pre class=\"code\">" string "</pre>")))
 
 (defun rep-source (target-string start end match-start match-end

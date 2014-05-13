@@ -18,18 +18,11 @@
 (in-package #:cl-wiki.system)
 
 (defsystem #:cl-wiki
-    :version "0.3.3"
+    :version "0.3.4"
     :author "Stefan Scholl <stesch@no-spoon.de>"
     :licence "Lesser Lisp General Public License"
-    :depends-on (#:hunchentoot #:cl-emb #:cl-ppcre #:cl-who #:bordeaux-threads)
+    :depends-on (#:hunchentoot #:cl-emb #:cl-ppcre #:cl-who #:bordeaux-threads #:colorize)
     :components ((:file "packages")
                  (:file "util")
-                 (:file "colorize-package")
-                 (:file "encode-for-pre")
-                 (:file "coloring-css" :depends-on ("colorize-package"))
-                 (:file "colorize" :depends-on ("colorize-package"
-                                                "coloring-css"
-                                                "encode-for-pre"))
-                 (:file "coloring-types" :depends-on ("colorize"))
-                 (:file "codes" :depends-on ("colorize" "coloring-types"))
+                 (:file "codes")
                  (:file "wiki" :depends-on ("packages" "util" "codes"))))
