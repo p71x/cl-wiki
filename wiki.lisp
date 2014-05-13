@@ -1,6 +1,7 @@
 ;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER; Base: 10 -*-
 
 ;;; This software is Copyright (c) Stefan Scholl, 2005-2008.
+;;; Modified by Piotr Chamera, 2014.
 ;;; Stefan Scholl grants you the rights to distribute
 ;;; and use this software as governed by the terms
 ;;; of the Lisp Lesser GNU Public License
@@ -43,10 +44,10 @@ of edit form.")
 (defvar *wiki-server* nil
   "Hunchentoot server instance")
 
-(defvar *emb-lock* (tbnl-mp:make-lock "emb-lock")
+(defvar *emb-lock* (bordeaux-threads:make-lock "emb-lock")
   "Lock for CL-EMB.")
 
-(defvar *page-index-lock* (tbnl-mp:make-lock "page-index-lock")
+(defvar *page-index-lock* (bordeaux-threads:make-lock "page-index-lock")
   "Lock for *PAGE-INDEX*")
 
 ;; -------------------------------------------------------------------
@@ -54,14 +55,14 @@ of edit form.")
 (defun current-page ()
   "Extracts the current page from the URL. 
 Returns *WIKI-HOME-PAGE* when / is accessed."
-  (let ((url (tbnl:script-name)))
-    (tbnl::url-decode (if (string= "/" url)
+  (let ((url (hunchentoot:script-name*)))
+    (hunchentoot:url-decode (if (string= "/" url)
                           *wiki-home-page*
                           (subseq url (+ 1 (position #\/ url :from-end t)))))))
 
 (defun page-version (page)
   "Current version of PAGE in *PAGE-INDEX*"
-  (tbnl-mp:with-lock (*page-index-lock*)
+  (bordeaux-threads:with-lock-held (*page-index-lock*)
     (gethash page *page-index*)))
 
 
@@ -115,7 +116,7 @@ at :LAST-MODIFIED, which is the ISO 8601 representation of the universaltime at
 
 (defun save (page)
   "Save the submitted PAGE and display it."
-  (tbnl-mp::with-lock (*page-index-lock*)
+  (bordeaux-threads:with-lock-held (*page-index-lock*)
     (let* ((version (aif (gethash page *page-index*)
                          (1+ it)
                          1))
@@ -123,12 +124,12 @@ at :LAST-MODIFIED, which is the ISO 8601 representation of the universaltime at
       (ensure-directories-exist path)
       (with-open-file (out path :direction :output :if-exists :supersede)
         (prin1 (list :address (if *behind-proxy-p*
-                                  (tbnl:header-in "X-Forwarded-For")
-                                  (tbnl:remote-addr))
+                                  (hunchentoot:header-in* "X-Forwarded-For")
+                                  (hunchentoot:remote-addr*))
                      :user nil      ; XXX just a test value
                      :time (get-universal-time))
                out)
-        (write-string (tbnl:parameter "content") out))
+        (write-string (hunchentoot:parameter "content") out))
       (set-page-version page version)))
   (display page (page-version page)))
 
@@ -167,11 +168,11 @@ edit form. The plist META contains the meta data like :TIME for last modified ti
   (multiple-value-bind (meta content)
       (aif (page-path page version)
            (if preview
-               (values (meta it) (tbnl:post-parameter "content"))
+               (values (meta it) (hunchentoot:post-parameter "content"))
                (meta-and-content it))
            (values nil 
                    (if preview
-                       (tbnl:post-parameter "content")
+                       (hunchentoot:post-parameter "content")
                        (format nil "Describe ~A here." page)))); XXX All texts must be configurable. L10N.
     (let ((body (with-html-output-to-string (s)
                   (when preview
@@ -212,17 +213,17 @@ edit form. The plist META contains the meta data like :TIME for last modified ti
                   (:table :border 1
                    (:tr
                     (:th "Name") (:th "Value"))
-                   (loop for (name . value) in (tbnl:headers-in)
+                   (loop for (name . value) in (hunchentoot:headers-in*)
                          do (htm (:tr (:td (str name)) (:td (str value))))))))))
 
 (defun wiki ()
   "Main command dispatching function for CL-WIKI."
-  (let* ((action (tbnl:parameter "action"))
-         (action-save (tbnl:parameter "action-save"))
-         (action-preview (tbnl:parameter "action-preview"))
+  (let* ((action (hunchentoot:parameter "action"))
+         (action-save (hunchentoot:parameter "action-save"))
+         (action-preview (hunchentoot:parameter "action-preview"))
          (page (current-page))
          (max-version (page-version page))
-         (param-version (aif (tbnl:parameter "version")
+         (param-version (aif (hunchentoot:parameter "version")
                              (and it (parse-integer it :junk-allowed t))))
          (version (if (and param-version (< 0 param-version max-version))
                       param-version
@@ -235,7 +236,7 @@ edit form. The plist META contains the meta data like :TIME for last modified ti
 
 (defun emb-lock-function (func)
   "Lock function for CL-EMB."
-  (tbnl-mp:with-lock (*emb-lock*)
+  (bordeaux-threads:with-lock-held (*emb-lock*)
     (funcall func)))
 
 ;; -------------------------------------------------------------------
@@ -263,7 +264,7 @@ edit form. The plist META contains the meta data like :TIME for last modified ti
 
 (defun read-page-index ()
   "Filling *PAGE-INDEX*."
-  (tbnl-mp:with-lock (*page-index-lock*)
+  (bordeaux-threads:with-lock-held (*page-index-lock*)
     (clrhash *page-index*)
     (with-open-file (in (index-path) :direction :input :if-does-not-exist nil)
       (when in
@@ -287,15 +288,17 @@ edit form. The plist META contains the meta data like :TIME for last modified ti
   (setf *attribute-quote-char* #\"
         (html-mode) :sgml
         *escape-char-p* #'(lambda (c) (find c "<>&"))
-        emb:*locking-function* 'emb-lock-function
-        tbnl:*default-content-type* "text/html; charset=utf-8"
-        tbnl:*default-handler* 'wiki
-        tbnl:*dispatch-table* (list
-                               (tbnl:create-folder-dispatcher-and-handler
-                                "/_static/" (merge-pathnames
-                                            "_static/"
-                                            wiki::*wiki-directory*))
-                               'tbnl:default-dispatcher)))
+        ;emb:*locking-function* 'emb-lock-function
+        hunchentoot:*default-content-type* "text/html; charset=utf-8")
+
+  (push (hunchentoot:create-prefix-dispatcher "/" 'wiki)
+	hunchentoot:*dispatch-table*)
+
+  (push (hunchentoot:create-folder-dispatcher-and-handler
+	 "/_static/" (merge-pathnames "_static/"
+				      wiki::*wiki-directory*))
+	hunchentoot:*dispatch-table*)
+  )
 
 ;; -------------------------------------------------------------------
 
@@ -303,7 +306,8 @@ edit form. The plist META contains the meta data like :TIME for last modified ti
   (init)
   (unless *wiki-directory*
     (error "A directory must be specified. Update your config, please."))
-  (setf *wiki-server* (tbnl:start-server :port *wiki-port*)))
+  (setf *wiki-server* (hunchentoot:start (make-instance 'hunchentoot:easy-acceptor 
+							:port *wiki-port*))))
 
 (defun stop ()
-  (tbnl:stop-server *wiki-server*))
+  (hunchentoot:stop *wiki-server*))
