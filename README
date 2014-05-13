@@ -7,8 +7,8 @@ http://common-lisp.net/project/cl-wiki/ - this page is currently outdated
 Dependencies
 ============
 
-It uses Hunchentoot (1.2.x), CL-PPCRE, CL-WHO (min. 0.6.0), and CL-EMB (min. 0.4.2).
-All available in quicklisp.
+It uses Hunchentoot (1.2.x), CL-PPCRE, CL-WHO (min. 0.6.0), 
+and CL-EMB (min. 0.4.2), colorize – all of them available in quicklisp.
 
 Quick start
 ===========
@@ -19,24 +19,27 @@ Quick start
         ;; ...
         (wiki:start)
 
-Then direct your browser to http://localhost:5757/cl-wiki/Somepage
+or using quicklisp:
+   
+	(push #p"your_path_to_clwiki_code/cl-wiki/" asdf:*central-registry*)
+	(ql:quickload :cl-wiki)
+        (wiki:start #p"your_path_to_clwiki_config/wiki.conf")
+
+
+Then direct your browser to http://localhost:5757/Somepage
 
 
 CL-WIKI uses Hunchentoot <http://weitz.de/hunchentoot/>. The example above
 runs it without any front-end. But you can install it for use with Apache and
 mod_lisp, too. See Hunchentoot's documentation.
 
-Syntax highlighting via lisppaste's colorizing code
-<http://common-lisp.net/project/lisppaste/>. See colorize-README.
-
+Syntax highlighting via https://github.com/redline6561/colorize loaded via quicklisp.org
 
 Config
 ======
 
-File "wiki.conf" in current directory.
+File "wiki.conf" in current directory or in path given as parameter to `wiki:start`.
 Example:
-
-  ;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER; Base: 10 -*-
 
   ;; Config file for CL-WIKI -- Wiki engine for Common Lisp
   (base (port 5757
@@ -112,10 +115,21 @@ Textformatting
                                     named language LANG.
                                     Snippet is surrounded by
                                     <div class="code"> ... </div>
-                                    LANG must be one of "Basic Lisp", "Scheme",
-                                    "Emacs Lisp", "Common Lisp", "C", "C++",
-                                    "Java", "Objective C", "Erlang", "Python",
-                                    or "Haskell"
+                                    LANG must be one of (taken from colorize README):
+				        Common Lisp,
+					Emacs Lisp,
+    					Scheme,
+					Clojure, [alpha]
+    					C,
+    					C++,
+    					Java,
+    					Python,
+    					Erlang,
+    					Haskell,
+    					Objective-C,
+    					Diff,
+    					Webkit.
+
 
 <nowiki> ... </nowiki>          ==> Excludes a portion of the text from code
                                     converting. Useful if you want to show
