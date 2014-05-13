@@ -7,6 +7,8 @@
 	Removed local copy of colorize code. Now depends on colorize
 	library available from quicklisp.org.
 
+	Removed aif macro (and all uses of it from code).
+
 0.3.3
 	2014-05-13 (Piotr Chamera)
 	Modified to work with current quicklisp release of libraries.

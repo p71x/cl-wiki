@@ -117,9 +117,8 @@ at :LAST-MODIFIED, which is the ISO 8601 representation of the universaltime at
 (defun save (page)
   "Save the submitted PAGE and display it."
   (bordeaux-threads:with-lock-held (*page-index-lock*)
-    (let* ((version (aif (gethash page *page-index*)
-                         (1+ it)
-                         1))
+    (let* ((version (+ 1 (gethash page *page-index* 0))) ; if page not in index then version = 1, 
+					                 ; else version = current version + 1
            (path (page-version-path page version)))
       (ensure-directories-exist path)
       (with-open-file (out path :direction :output :if-exists :supersede)
@@ -166,14 +165,15 @@ edit form. The plist META contains the meta data like :TIME for last modified ti
 (defun edit (page version &key preview)
   "Edit the PAGE."
   (multiple-value-bind (meta content)
-      (aif (page-path page version)
+      (let ((path (page-path page version)))
+	(if path
            (if preview
-               (values (meta it) (hunchentoot:post-parameter "content"))
-               (meta-and-content it))
+               (values (meta path) (hunchentoot:post-parameter "content"))
+               (meta-and-content path))
            (values nil 
                    (if preview
                        (hunchentoot:post-parameter "content")
-                       (format nil "Describe ~A here." page)))); XXX All texts must be configurable. L10N.
+                       (format nil "Describe ~A here." page))))); XXX All texts must be configurable. L10N.
     (let ((body (with-html-output-to-string (s)
                   (when preview
                     (htm 
@@ -223,8 +223,8 @@ edit form. The plist META contains the meta data like :TIME for last modified ti
          (action-preview (hunchentoot:parameter "action-preview"))
          (page (current-page))
          (max-version (page-version page))
-         (param-version (aif (hunchentoot:parameter "version")
-                             (and it (parse-integer it :junk-allowed t))))
+         (param-version (let ((it (hunchentoot:parameter "version")))
+			  (when it (parse-integer it :junk-allowed t))))
          (version (if (and param-version (< 0 param-version max-version))
                       param-version
                       max-version)))

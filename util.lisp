@@ -13,10 +13,10 @@
 ;; Macros
 ;; -----------------------------------------------------------------------------
 
-(defmacro aif (test then &optional else)
-  "Like IF. But the value of the test form gets bound to IT."
-  `(let ((it ,test))
-    (if it ,then ,else)))
+;; (defmacro aif (test then &optional else)
+;;   "Like IF. But the value of the test form gets bound to IT."
+;;   `(let ((it ,test))
+;;     (if it ,then ,else)))
 
 
 ;; -----------------------------------------------------------------------------
