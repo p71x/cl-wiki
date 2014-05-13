@@ -1,8 +1,14 @@
+
+	2014-05-13 (Piotr Chamera)
+	`cl-wiki:start` now takes optional parameter – path to wiki 
+	configuration file. Default is „wiki.conf” in current directory 
+	(as before).
+
 0.3.3
-	2014-05-13
+	2014-05-13 (Piotr Chamera)
 	Modified to work with current quicklisp release of libraries.
 	Added sample „wiki.conf” file.
-		
+
 0.3.2
 	2008-11-19
 	Regexp/rendering speedup. Thanks to Ralf Stoye.

@@ -241,9 +241,8 @@ edit form. The plist META contains the meta data like :TIME for last modified ti
 
 ;; -------------------------------------------------------------------
 
-(defun read-config (&optional path)
-  (with-open-file (plist-stream (or path
-                                    (make-pathname :name "wiki" :type "conf")))
+(defun read-config (path)
+  (with-open-file (plist-stream path)
     (let ((*read-eval* nil)
           (*package* (find-package :keyword)))
       (read plist-stream))))
@@ -273,8 +272,8 @@ edit form. The plist META contains the meta data like :TIME for last modified ti
               for value = (parse-integer (read-line in t))
               do (setf (gethash key *page-index*) value))))))
 
-(defun init ()
-  (let ((conf (read-config)))
+(defun init (config-path)
+  (let ((conf (read-config config-path)))
     (setf *wiki-directory* (string-to-directory-pathname (get-config-value conf :base :directory))
           *wiki-port* (get-config-value conf :base :port *wiki-port*)
           *wiki-template-directory* (get-config-value conf :base :template-directory *wiki-template-directory*)
@@ -302,8 +301,9 @@ edit form. The plist META contains the meta data like :TIME for last modified ti
 
 ;; -------------------------------------------------------------------
 
-(defun start ()
-  (init)
+(defun start (&optional config-path)
+  (init (or config-path
+	    (make-pathname :name "wiki" :type "conf")))
   (unless *wiki-directory*
     (error "A directory must be specified. Update your config, please."))
   (setf *wiki-server* (hunchentoot:start (make-instance 'hunchentoot:easy-acceptor 
