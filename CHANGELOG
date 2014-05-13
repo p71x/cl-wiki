@@ -1,8 +1,11 @@
-
+0.3.4
 	2014-05-13 (Piotr Chamera)
 	`cl-wiki:start` now takes optional parameter – path to wiki 
 	configuration file. Default is „wiki.conf” in current directory 
 	(as before).
+
+	Removed local copy of colorize code. Now depends on colorize
+	library available from quicklisp.org.
 
 0.3.3
 	2014-05-13 (Piotr Chamera)
