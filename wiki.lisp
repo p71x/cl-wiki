@@ -287,7 +287,7 @@ edit form. The plist META contains the meta data like :TIME for last modified ti
   (setf *attribute-quote-char* #\"
         (html-mode) :sgml
         *escape-char-p* #'(lambda (c) (find c "<>&"))
-        ;emb:*locking-function* 'emb-lock-function
+        emb:*locking-function* 'emb-lock-function
         hunchentoot:*default-content-type* "text/html; charset=utf-8")
 
   (push (hunchentoot:create-prefix-dispatcher "/" 'wiki)
