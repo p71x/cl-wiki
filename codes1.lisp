@@ -59,11 +59,15 @@
 	     (:section (section children))
 	     (:title   (title children))
 	     (:source  (source children))
-	     (:p      (wrap-into-tag "p" children))
-	     (:em     (wrap-into-tag "em" children))
-	     (:strong (wrap-into-tag "strong" children))
-	     (:sup      (wrap-into-tag "sup" children))
-	     (:sub      (wrap-into-tag "sub" children))
+	     (:p       (wrap-into-tag "p" children))
+	     (:em      (wrap-into-tag "em" children))
+	     (:strong  (wrap-into-tag "strong" children))
+	     (:sup     (wrap-into-tag "sup" children))  ;; superscript
+	     (:sub     (wrap-into-tag "sub" children))  ;; subscript
+	     (:s       (wrap-into-tag "s" children))    ;; strike out text
+	     (:u       (wrap-into-tag "u" children))    ;; underline text
+	     (:del     (wrap-into-tag "del" children))  ;; mark text as deleted
+	     (:ins     (wrap-into-tag "ins" children))  ;; mark text as inserted
 	     (:hr     (empty-tag "hr"))
 	     (:br     (empty-tag "br"))
 	     (:link   (link-external children))
@@ -114,8 +118,8 @@
 	 (text (if (rest in)
 		   (process-list (rest in))
 		   (first in))))
-    ;(con "a href=\"" (tbnl:url-encode name) "\">" text "</a>")))
-    (con "<a href=\"" name "\">" text "</a>")))
+    (con "<a href=\"" (tbnl:url-encode name) "\">" text "</a>")))
+    ;(con "<a href=\"" name "\">" text "</a>")))
 
 
 
@@ -194,39 +198,11 @@ for HTML.")
     ;; CR or LF ==> <br>
     ("\\x0d?\\x0a" . "<br>")
 
-    ;; <br> or <br/> ==> Start a new line
-    ("&lt;br\s*/?&gt;(<br>)?" . "<br/>")
-
-    ;; '''text''' ==> stronger emphasize text (<strong>text</strong>),
-    ;;                on most browsers bold.
-    ("'''(.*?)'''" . "<strong>\\1</strong>")
-
-    ;; ''text'' ==> emphasize text (<em>text</em>), on most browsers italic.
-    ("''(.*?)''" . "<em>\\1</em>")
-
     ;; <small>text</small> ==> text in small font
     ("&lt;small&gt;(.*?)&lt;/small&gt;" . "<small>\\1</small>")
 
     ;; <big>text</big> ==> text in big font
     ("&lt;big&gt;(.*?)&lt;/big&gt;" . "<big>\\1</big>")
-
-    ;; <sub>x</sub> ==> subscripting x
-    ("&lt;sub&gt;(.*?)&lt;/sub&gt;" . "<sub>\\1</sub>")
-
-    ;; <sup>x</sup> ==> superscripting x
-    ("&lt;sup&gt;(.*?)&lt;/sup&gt;" . "<sup>\\1</sup>")
-
-    ;; <s>text</s> ==> strike out text
-    ("&lt;s&gt;(.*?)&lt;/s&gt;" . "<s>\\1</s>")
-
-    ;; <u>text</u> ==> underline text
-    ("&lt;u&gt;(.*?)&lt;/u&gt;" . "<u>\\1</u>")
-
-    ;; <del>text</del> ==> Mark text as deleted
-    ("&lt;del&gt;(.*?)&lt;/del&gt;" . "<del>\\1</del>")
-
-    ;; <ins>text</ins> ==> Mark text as inserted
-    ("&lt;ins&gt;(.*?)&lt;/ins&gt;" . "<ins>\\1</ins>")
 
     ;; [[Page|Text]] ==> Generates a link to named page and links Text.
     ("\\[\\[([^]\">|]*?)\\|([^]\">]*?)\\]\\]"
