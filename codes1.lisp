@@ -60,6 +60,9 @@
 	     (:title   (title children))
 	     (:source  (source children))
 	     (:p       (wrap-into-tag "p" children))
+	     (:ul      (wrap-into-tag "ul" children))
+	     (:ol      (wrap-into-tag "ol" children))
+	     (:li      (wrap-into-tag "li" children))
 	     (:em      (wrap-into-tag "em" children))
 	     (:strong  (wrap-into-tag "strong" children))
 	     (:sup     (wrap-into-tag "sup" children))  ;; superscript
@@ -119,64 +122,6 @@
 		   (process-list (rest in))
 		   (first in))))
     (con "<a href=\"" (tbnl:url-encode name) "\">" text "</a>")))
-
-
-
-
-(defparameter *marker* (map 'string #'code-char #(#x1e #xff #xfe #x1e))
-  "To mark the place in the string where preserved HTML should be restored.")
-
-
-
-(defun rep-nowiki (target-string start end match-start match-end
-                   reg-starts reg-ends)
-  "Replacement function for CL-PPCRE:REGEX-REPLACE-ALL. Match in register 1 (0 in array)
-will be escaped and stored in *preserved-html*."
-  (declare (special *preserved-html*) (ignore start end match-start match-end))
-  (prog1
-      (format nil "~A~D~A" *marker* (fill-pointer *preserved-html*) *marker*)
-    (vector-push-extend
-     (escape-string (subseq target-string (or (aref reg-starts 0) 0) (or (aref reg-ends 0) 0)))
-     *preserved-html*)))
-
-(defun rep-list (target-string start end match-start match-end reg-starts reg-ends)
-  "Replacement function for CL-PPCRE:REGEX-REPLACE-ALL. Handles lists."
-  (declare (ignore start end reg-starts reg-ends))
-  (with-output-to-string (s)
-    (write-string "<ul>" s)
-    (cl-ppcre:do-matches-as-strings (line "(?ims)(?:<br>)?.*?(?=(?:<br>|\\z))"
-                                          (subseq target-string match-start match-end)
-                                          nil :sharedp t)
-      (write-string (ppcre:regex-replace "(?:<br>|^)\\*\\s*(.*)" line "<li>\\1</li>") s))
-    (write-string "</ul>" s)))
-
-(defun rep-source (target-string start end match-start match-end
-                   reg-starts reg-ends)
-  "Replacement function for CL-PPCRE:REGEX-REPLACE-ALL. Match in register 1 (0 in array)
-is the language, match in register 2 becomes a source snippet. Stored in *preserved-html*."
-  (declare (special *preserved-html*) (ignore start end match-start match-end))
-  (prog1
-      (format nil "~A~D~A" *marker* (fill-pointer *preserved-html*) *marker*)
-    (vector-push-extend
-     (let* ((lang-string (subseq target-string (or (aref reg-starts 0) 0) (or (aref reg-ends 0) 0)))
-            (lang (first (rassoc lang-string (colorize:coloring-types) :test #'string-equal))))
-       (make-source-snippet lang (subseq target-string (aref reg-starts 1) (aref reg-ends 1))))
-     *preserved-html*)))
-
-
-(defparameter *replace-list* ; re-evaluate *replace-list-compiled* if you change this
-  `(
-
-    ;; <small>text</small> ==> text in small font
-    ("&lt;small&gt;(.*?)&lt;/small&gt;" . "<small>\\1</small>")
-
-    ;; <big>text</big> ==> text in big font
-    ("&lt;big&gt;(.*?)&lt;/big&gt;" . "<big>\\1</big>")
-
-
-    ;; * Item ==> List item
-    ("(?ims)(?:<br>|^)\\*.*?(?=(?:<br>|^)[^\\*]|\\z)" . ,'rep-list)
-))
 
 
 (defun translate-wiki-codes (string)
