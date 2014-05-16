@@ -105,17 +105,17 @@
 (defun link-external (in)
   (let* ((url (first in))
 	 (text (if (rest in)
-		   (process-list in)
+		   (process-list (rest in))
 		   (first in))))
-    (con "a href=\"" url "\">" text "</a>")))
+    (con "<a href=\"" url "\">" text "</a>")))
 
 (defun link-wiki (in)
   (let* ((name (first in))
 	 (text (if (rest in)
-		   (process-list in)
+		   (process-list (rest in))
 		   (first in))))
     ;(con "a href=\"" (tbnl:url-encode name) "\">" text "</a>")))
-    (con "a href=\"" name "\">" text "</a>")))
+    (con "<a href=\"" name "\">" text "</a>")))
 
 
 
