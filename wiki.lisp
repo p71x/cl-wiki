@@ -181,7 +181,8 @@ edit form. The plist META contains the meta data like :TIME for last modified ti
                      (:hr)
                      (:strong "This is only a preview! Changes aren't saved!")
                      (:hr)
-                     (str (translate content))
+                     (str (cl-wiki.sxml-text::translate content))
+                     ;(str (translate content))
                      (:hr)))
                   (:form :action (format nil "~A" page) :method "POST"
                          (:fieldset
@@ -202,7 +203,8 @@ edit form. The plist META contains the meta data like :TIME for last modified ti
     (if path
         (multiple-value-bind (meta content)
             (meta-and-content path)
-          (execute-main-template page version (translate content) :meta (ncomplete-meta meta)))
+          (execute-main-template page version (cl-wiki.sxml-text::translate content) :meta (ncomplete-meta meta)))
+          ;(execute-main-template page version (translate content) :meta (ncomplete-meta meta)))
         (edit page version))))
 
 (defun debug-header ()

@@ -142,7 +142,7 @@
 			(reverse acc))))))
        (process-list (read-objects string)))))
 
-(in-package :cl-wiki)
+;(in-package :cl-wiki)
 
 (defun translate (string)
   "Translates the wiki codes inside STRING into HTML."

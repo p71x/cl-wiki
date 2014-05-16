@@ -1,3 +1,13 @@
+
+0.4.0 alpha
+	2014-05-16
+	New markup based on s-expressions. Previous markup disabled.
+	Whole system incompatible with previous wersions.
+
+	2014-05-14
+	Fix: uncoment temporarily commented and forgotten
+	(setf emb:*locking-function* 'emb-lock-function)
+
 0.3.4
 	2014-05-13 (Piotr Chamera)
 	`cl-wiki:start` now takes optional parameter – path to wiki 

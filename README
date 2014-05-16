@@ -2,7 +2,8 @@
  CL-WIKI    Wiki Engine for Common Lisp
 =========   ---------------------------
 
-http://common-lisp.net/project/cl-wiki/ - this page is currently outdated
+This is version 0.4.x alpha of cl-wiki. It is incompatible with previous 
+0.3.x versions of cl wiki. Markup of pages was totally changed.
 
 Dependencies
 ============
@@ -77,43 +78,37 @@ edit-textarea-size      Plist of size of edit textarea.
 Textformatting
 ==============
 
-[[Page]]                        ==> Generates a link to named page.
-[[Page|Text]]                   ==> Generates a link to named page
+Content of page is written as s-expressions. Symbols can be written with 
+or without colon. They are interned in „keywords” package. In all places 
+where is "text" there can be more of them and they can be mixed with markup, 
+they are all concatenated.
+
+(:wiki "name")                  ==> Generates a link to named page.
+(:wiki "name" "text")           ==> Generates a link to named page
                                     and links Text.
-[http://www.somepage.example/]  ==> Inserts external link
-''text''                        ==> emphasize text (<em>text</em>) 
+(:link "url" "text")            ==> Inserts external link
+(:em "text")                    ==> emphasize text (<em>text</em>) 
                                     -- on most browsers italic
-'''text'''                      ==> stronger emphasize text
+(:strong "text")                ==> stronger emphasize text
                                     (<strong>text</strong>)
                                     -- on most browsers bold
-<small>text</small>             ==> text in small font
-<big>text</big>                 ==> text in big font
-<sub>x</sub>                    ==> subscripting x
-<sup>x</sup>                    ==> superscripting x
-<s>text</s>                     ==> strike out text
-<u>text</u>                     ==> underline text
-<del>text</del>                 ==> Mark text as deleted
-<ins>text</ins>                 ==> Mark text as inserted
-<br> or <br/>                   ==> Start a new line
-* Item                          ==> List item
+(:sub "text")                   ==> subscripting x
+(:sup "text")                   ==> superscripting x
+(:s "text")                     ==> strike out text
+(:u "text")                     ==> underline text
+(:del "text")                   ==> Mark text as deleted
+(:ins "text")                   ==> Mark text as inserted
+(:br)                           ==> Start a new line
+(:hr)                           ==> Horizontal line
 
-= Foo =                         ==> Level 1 header (discouraged)
+(ul ...), (ol ...), (li ...)    ==> Unordered and ordered list, list item
 
-== Foo ==                       ==> Level 2 header
+(section ...)                   ==> No visual rendering, increments header level
+(title "text")                  ==> Header, level dependent of sections nesting level
 
-...                             ...
-
-====== Foo ======               ==> Level 6 header
-
-----                            ==> Horizontal divider
-
-<source> ... </source>          ==> Sourcecode snippet
-                                    <pre class="code"> ... </pre>
-
-<source lang="LANG"> ... </source>
-                                ==> Sourcecode snippet, colorized for the
-                                    named language LANG.
-                                    Snippet is surrounded by
+(source "lang" "source")        ==> Sourcecode snippet, colorized for the
+                                    named language LANG. For now its necessary to manually 
+               			    escape " inside. Snippet is surrounded by
                                     <div class="code"> ... </div>
                                     LANG must be one of (taken from colorize README):
 				        Common Lisp,
@@ -129,15 +124,9 @@ Textformatting
     					Objective-C,
     					Diff,
     					Webkit.
+				    If lang code is unrecognized, then no coloring is used.
 
-
-<nowiki> ... </nowiki>          ==> Excludes a portion of the text from code
-                                    converting. Useful if you want to show
-                                    the formatting codes on a help page, etc.
-
-<!-- comment -->                ==> Removes everything between <!-- and -->.
-                                    Allows commenting.
-
+Unrecognized tags are rendered as text. They must be well formed forms.
 
 Philosophy
 ==========
