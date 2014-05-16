@@ -119,8 +119,6 @@
 		   (process-list (rest in))
 		   (first in))))
     (con "<a href=\"" (tbnl:url-encode name) "\">" text "</a>")))
-    ;(con "<a href=\"" name "\">" text "</a>")))
-
 
 
 
@@ -128,11 +126,7 @@
 (defparameter *marker* (map 'string #'code-char #(#x1e #xff #xfe #x1e))
   "To mark the place in the string where preserved HTML should be restored.")
 
-(defun url-encoder (string)
-  "Replacement function for CL-PPCRE:REGEX-REPLACE-ALL. Match in register 1 (0 in array)
-gets url encoded."
-  (declare (ignore start end match-start match-end))
-  (tbnl:url-encode (subseq target-string (aref reg-starts 0) (aref reg-ends 0))))
+
 
 (defun rep-nowiki (target-string start end match-start match-end
                    reg-starts reg-ends)
@@ -169,34 +163,9 @@ is the language, match in register 2 becomes a source snippet. Stored in *preser
        (make-source-snippet lang (subseq target-string (aref reg-starts 1) (aref reg-ends 1))))
      *preserved-html*)))
 
-(defun rep-restore-preserved (target-string start end match-start match-end
-                              reg-starts reg-ends)
-  "Replacemen function for CL-PPCRE:REGEX-REPLACE-ALL. Match in register 1 (0 in array)
-is an index for the array *preserved-html*. Restores preserved HTML."
-  (declare (special *preserved-html*) (ignore start end match-start match-end))
-  (aref *preserved-html* (parse-integer (subseq target-string (aref reg-starts 0) (aref reg-ends 0)))))
-  
-(defparameter *unescaped-replace-list* ; re-evaluate *unescaped-replace-list-compiled* if you change this
-  `(
-    ;; Remove the marker first, so there will be no trouble at the end.
-    (,*marker* . "")
-
-    ;; <nowiki> .. </nowiki> ==> Exclude portions of text from wiki converting
-    ("(?ims)<nowiki>(.*?)</nowiki>" . ,'rep-nowiki)
-
-    ;; <!-- comment --> ==> Removes everything between <!-- and -->. Allows commenting.
-    ("(?ims)<!--(.*?)-->" . "")
-
-    ;; <source> .. </source> ==> Sourcecode
-    ("(?ims)<source(?:\\s*lang=\"(.*?)\")?>(?:\\x0d?\\x0a)*(.*?)</source>" . ,'rep-source))
-  "List of conses. CAR is regexp and CDR replace-string for
-CL-PPCRE:REGEX-REPLACE-ALL. This list is used before string gets escaped
-for HTML.")
 
 (defparameter *replace-list* ; re-evaluate *replace-list-compiled* if you change this
   `(
-    ;; CR or LF ==> <br>
-    ("\\x0d?\\x0a" . "<br>")
 
     ;; <small>text</small> ==> text in small font
     ("&lt;small&gt;(.*?)&lt;/small&gt;" . "<small>\\1</small>")
@@ -204,60 +173,10 @@ for HTML.")
     ;; <big>text</big> ==> text in big font
     ("&lt;big&gt;(.*?)&lt;/big&gt;" . "<big>\\1</big>")
 
-    ;; [[Page|Text]] ==> Generates a link to named page and links Text.
-    ("\\[\\[([^]\">|]*?)\\|([^]\">]*?)\\]\\]"
-     . ,(list "<a href=\"" 'rep-url-encoder-1 "\" title=\"" 0 "\">" 1 "</a>"))
-
-    ;; [[Page]] ==> Generates a link to named page.
-    ("\\[\\[(.*?)\\]\\]"
-     . ,(list "<a href=\"" 'rep-url-encoder-1 "\" title=\"" 0 "\">" 0 "</a>"))
-
-    ;; [http://www.somepage.example/] ==> Inserts external link.
-    ("\\[(http|https|ftp|mailto|gopher):([^\">].*?)\\]"
-     . "<a rel=\"nofollow\" class=\"external \\1\" href=\"\\1:\\2\" title=\"\\1:\\2\">\\1:\\2</a>")
-
-    ;; ====== Foo ======  ==> Level 6 header (etc.)
-    ("(?ims)(<br>|^)======\\s*(.*?)\\s*=*(?=(?:<br>|\\z))" . "\\1<h6>\\2</h6>")
-    ("(?ims)(<br>|^)=====\\s*(.*?)\\s*=*(?=(?:<br>|\\z))" . "\\1<h5>\\2</h5>")
-    ("(?ims)(<br>|^)====\\s*(.*?)\\s*=*(?=(?:<br>|\\z))" . "\\1<h4>\\2</h4>")
-    ("(?ims)(<br>|^)===\\s*(.*?)\\s*=*(?=(?:<br>|\\z))" . "\\1<h3>\\2</h3>")
-    ("(?ims)(<br>|^)==\\s*(.*?)\\s*=*(?=(?:<br>|\\z))" . "\\1<h2>\\2</h2>")
-    ("(?ims)(<br>|^)=\\s*(.*?)\\s*=*(?=(?:<br>|\\z))" . "\\1<h1>\\2</h1>")
-
-    ;; ---- ==> Horizontal divider
-    ("(?ims)(<br>|^)----.*?(?=(?:<br>|\\z))" . "\\1<hr>")
 
     ;; * Item ==> List item
     ("(?ims)(?:<br>|^)\\*.*?(?=(?:<br>|^)[^\\*]|\\z)" . ,'rep-list)
-
-    ;; <br><br><br>* ==> <p>
-    ("(?ims)(<br>){2,}" . "<p>")
-
-    ;; <br> => " "
-    ("(?ims)(<br>)" . " ")
-
-    ;; <br/> => "<br>" - Cleanup for <br> wiki tag
-    ("(?ims)<br/>" . "<br>")
-
-
-    ;; Restore preserved HTML
-    (,(concatenate 'string *marker* "(\\d+)" *marker*) . ,'rep-restore-preserved)
-    )
-  ;;
-  "List of conses. CAR is regexp and CDR replace-string for
-CL-PPCRE:REGEX-REPLACE-ALL.")
-
-(defparameter *unescaped-replace-list-compiled*
-  (mapcar #'(lambda (reg-rep)
-              (destructuring-bind (regexp . replace) reg-rep
-                (cons (cl-ppcre:create-scanner regexp) replace)))
-          *unescaped-replace-list*))
-
-(defparameter *replace-list-compiled*
-  (mapcar #'(lambda (reg-rep)
-              (destructuring-bind (regexp . replace) reg-rep
-                (cons (cl-ppcre:create-scanner regexp) replace)))
-          *replace-list*))
+))
 
 
 (defun translate-wiki-codes (string)
